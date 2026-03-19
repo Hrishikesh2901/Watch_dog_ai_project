@@ -1,31 +1,25 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ai-master-ingress
-  namespace: ai-project
+  name: watchdog-final-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      - path: /docs
-        pathType: Prefix
-        backend:
-          service:
-            name: ai-backend-ai-app-chart
-            port:
-              number: 8000
-      - path: /openapi.json
-        pathType: Prefix
-        backend:
-          service:
-            name: ai-backend-ai-app-chart
-            port:
-              number: 8000
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: ai-frontend-ai-app-chart
+            name: watchdog-frontend-v2-svc
             port:
-              number: 3000
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: watchdog-service-ai-app-chart
+            port:
+              number: 8000

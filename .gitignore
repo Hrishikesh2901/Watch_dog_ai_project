@@ -42,3 +42,4 @@ docker-compose.override.yml
 # --- Helm Specific ---
 # Agar local pe charts build kiye hain
 charts/*.tgzbackend/venv/
+*.tar

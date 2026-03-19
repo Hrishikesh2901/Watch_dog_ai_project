@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: watchdog-frontend-svc
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80          # Browser ispe hit karega
+      targetPort: 80    # Container ke andar ka port (Nginx standard)
+  type: ClusterIP
