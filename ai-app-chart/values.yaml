@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: hrishipatil193/ai-backend
-  pullPolicy: always
+  pullPolicy: Always
   tag: "v1"
 
 # ServiceAccount Section (Jahan error aa raha tha)
