@@ -1,8 +1,10 @@
-# frontend-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: watchdog-frontend
+  labels:
+    app: watchdog-frontend
+    version: v3
 spec:
   replicas: 1
   selector:
@@ -15,20 +17,41 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: hrishipatil193/watchdog-frontend:v1
+        image: hrishipatil193/watchdog-frontend:v3  # <--- Version V3
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3000  # <--- Dockerfile se match hona chahiye
+        - containerPort: 3000
+        # --- PRO LEVEL ADDITION: SELF-HEALING ---
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # --- RESOURCE MANAGEMENT ---
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: watchdog-frontend-svc
+  name: watchdog-frontend-v2-svc # Jo humne pehle fix kiya tha
 spec:
   selector:
     app: watchdog-frontend
   ports:
     - protocol: TCP
-      port: 80          # Browser ke liye
-      targetPort: 3000  # Container ke andar ka port
+      port: 80
+      targetPort: 3000
   type: ClusterIP
