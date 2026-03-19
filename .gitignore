@@ -1,0 +1,44 @@
+__pycache__/
+*.pyc
+data/
+# --- Terraform Specific (BOHOT IMPORTANT) ---
+# Isse block karna zaroori hai warna secret keys leak ho jayengi
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+.terraform.tfstate.lock.info
+override.tf
+override.tf.json
+
+# --- Python / Backend Specific ---
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+bin/
+lib/
+develop-eggs/
+dist/
+eggs/
+lib64/
+
+# --- Docker Specific ---
+# Agar local pe koi credentials store hain
+.docker/
+docker-compose.override.yml
+
+# --- OS & IDE Specific ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.log
+
+# --- Helm Specific ---
+# Agar local pe charts build kiye hain
+charts/*.tgzbackend/venv/

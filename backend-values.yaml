@@ -1,0 +1,41 @@
+replicaCount: 1
+
+image:
+  repository: hrishipatil193/ai-backend
+  pullPolicy: Never
+  tag: "v1"
+
+serviceAccount:
+  create: true
+  name: "ai-backend-sa"
+
+service:
+  type: ClusterIP
+  port: 8000  # Backend Port
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Ye zaroori hai agar backend /api nahi samajhta
+  hosts:
+    - host: ai-project.local
+      paths:
+        - path: /api
+          pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false
+httpRoute:
+  enabled: false
+env:
+  - name: ROOT_PATH
+    value: "/api"

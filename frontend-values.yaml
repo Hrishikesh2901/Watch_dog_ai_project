@@ -1,0 +1,33 @@
+replicaCount: 1
+
+image:
+  repository: hrishipatil193/ai-frontend
+  pullPolicy: Never
+  tag: "v1"
+
+serviceAccount:
+  create: true
+  name: "ai-frontend-sa"
+
+service:
+  type: ClusterIP
+  port: 3000  # Frontend Port
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: ai-project.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+autoscaling:
+  enabled: false
+
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false
+httpRoute:
+  enabled: false

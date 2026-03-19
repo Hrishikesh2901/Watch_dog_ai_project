@@ -1,0 +1,192 @@
+page.tsxpage.tsxpage.tsxpage.tsxpage.tsxpage.tsxpage.tsxpage.tsxpage.tsxpage.tsxpage.tsx"use client";
+import React from 'react';
+import { motion } from "framer-motion";
+import CountUp from '@/components/CountUp';
+import Hyperspeed from '@/components/Hyperspeed';
+import { NavBar } from "@/components/NavBar";
+import { ObjectiveCard } from "@/components/ObjectiveCard";
+import { FeatureSection } from "@/components/FeatureSection";
+import { Shield, Cpu, Users, Megaphone, LayoutDashboard, FileText, Download } from "lucide-react";
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-950 selection:bg-purple-500/30">
+      <NavBar />
+      
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+        
+        <div className="container mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.div 
+              initial={{ rotateX: 0 }}
+              animate={{ rotateX: [0, 10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-block mb-6 perspective-1000"
+            >
+                <div className="px-4 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-300 text-sm font-medium shadow-[0_0_15px_rgba(168,85,247,0.4)] backdrop-blur-sm">
+                  Citizen-Led AI Audit Platform
+                </div>
+            </motion.div>
+            <h1 className="text-6xl md:text-8xl font-bold text-slate-900 dark:text-white tracking-tight mb-6">
+               The People&apos;s <br /> 
+               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">AI Watchdog</span>
+            </h1>
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Empowering citizens to report opaque and unfair AI decisions in government services. 
+              Turn your stories into data for accountability.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Objectives Section */}
+      <section id="objectives" className="py-20 px-4 bg-white dark:bg-slate-950 relative">
+        <div className="container mx-auto">
+            <motion.h2 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                className="text-4xl font-bold text-center mb-16 text-slate-900 dark:text-white"
+            >
+                Our Core Objectives
+            </motion.h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <ObjectiveCard 
+                    title="Centralize Experiences"
+                    why="Citizens face unexplained rejections in housing, visas, jobs."
+                    example="MHADA housing lottery applicant marked 'Not Selected' with no reason."
+                    gradient="bg-blue-500"
+                />
+                <ObjectiveCard 
+                    title="Anonymize Data"
+                    why="Citizens share sensitive IDs like Aadhaar for validation."
+                    example="Aadhaar-linked ration denial reports redacted for privacy."
+                    gradient="bg-purple-500"
+                />
+                 <ObjectiveCard 
+                    title="Extract Metadata"
+                    why="Raw text needs structure for pattern recognition."
+                    example="Visa rejection -> {Type: Visa, Reason: Section 214(b)}."
+                    gradient="bg-pink-500"
+                />
+                <ObjectiveCard 
+                    title="Visualize Bias"
+                    why="Transparency emerges only when cases are seen collectively."
+                    example="Heatmap shows high biometric mismatch denials in Bihar."
+                    gradient="bg-orange-500"
+                />
+            </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="bg-slate-50 dark:bg-slate-900/50 relative">
+        <div className="absolute inset-0 z-0 opacity-40 overflow-hidden">
+                <Hyperspeed effectOptions={{
+                    onSpeedUp: () => { },
+                    onSlowDown: () => { },
+                    distortion: 'turbulentDistortion',
+                    length: 400,
+                    roadWidth: 10,
+                    islandWidth: 2,
+                    lanesPerRoad: 4,
+                    fov: 90,
+                    fovSpeedUp: 150,
+                    speedUp: 2,
+                    carLightsFade: 0.4,
+                    totalSideLightSticks: 20,
+                    lightPairsPerRoadWay: 40,
+                    shoulderLinesWidthPercentage: 0.05,
+                    brokenLinesWidthPercentage: 0.1,
+                    brokenLinesLengthPercentage: 0.5,
+                    lightStickWidth: [0.12, 0.5],
+                    lightStickHeight: [1.3, 1.7],
+                    movingAwaySpeed: [60, 80],
+                    movingCloserSpeed: [-120, -160],
+                    carLightsLength: [400 * 0.03, 400 * 0.2],
+                    carLightsRadius: [0.05, 0.14],
+                    carWidthPercentage: [0.3, 0.5],
+                    carShiftX: [-0.8, 0.8],
+                    carFloorSeparation: [0, 5],
+                    colors: {
+                        roadColor: 0x080808,
+                        islandColor: 0x0a0a0a,
+                        background: 0x000000,
+                        shoulderLines: 0xffffff,
+                        brokenLines: 0xffffff,
+                        leftCars: [0xd856bf, 0x6750a2, 0xc247ac],
+                        rightCars: [0x03b3c3, 0x0e5ea5, 0x324555],
+                        sticks: 0x03b3c3
+                    }
+                }} />
+        </div>
+           <div className="container mx-auto px-4 relative z-10">
+               <FeatureSection 
+                    title="Smart Dashboard"
+                    description="Visualize systemic patterns with interactive charts. Track total cases, filter by state, and monitor moderation status in real-time."
+                    icon={LayoutDashboard}
+                    index={0}
+               />
+               <FeatureSection 
+                    title="Easy Submission"
+                    description="Simple forms with auto-redaction preview. Submit your story safely and let our AI extract the key details for analysis."
+                    icon={FileText}
+                    index={1}
+               />
+               <FeatureSection 
+                    title="Data Export"
+                    description="Researchers and NGOs can download structured datasets to support advocacy and drive policy changes."
+                    icon={Download}
+                    index={2}
+               />
+           </div>
+      </section>
+
+      {/* Flow Section */}
+      <section id="flow" className="py-20 px-4 bg-white dark:bg-slate-950 relative overflow-hidden">
+          <div className="container mx-auto text-center">
+              <h2 className="text-4xl font-bold mb-16 text-slate-900 dark:text-white">How It Works</h2>
+              
+              <div className="relative max-w-4xl mx-auto">
+                  {/* Vertical Line */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-blue-500 to-purple-500 opacity-20" />
+
+                  <div className="space-y-24">
+                      {[
+                          { icon: Shield, title: "Report", desc: "Submit your story securely. We protect your identity while capturing the truth." },
+                          { icon: Cpu, title: "Analyze", desc: "Our AI detects systemic bias and patterns across thousands of reports." },
+                          { icon: Users, title: "Verify", desc: "Human experts and community moderators validate findings to ensure accuracy." },
+                          { icon: Megaphone, title: "Mobilize", desc: "Data-backed reports drive policy change and hold institutions accountable." }
+                      ].map((item, i) => (
+                          <motion.div 
+                            key={i}
+                            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.6, delay: i * 0.1 }}
+                            className="relative z-10 flex flex-col items-center group"
+                          >
+                              <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border-2 border-blue-100 dark:border-blue-900 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/10 group-hover:scale-110 group-hover:shadow-blue-500/30 group-hover:border-blue-500 transition-all duration-300">
+                                  <item.icon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <h3 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.title}</h3>
+                              <p className="text-slate-600 dark:text-slate-400 max-w-sm text-lg leading-relaxed">{item.desc}</p>
+                          </motion.div>
+                      ))}
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      <footer className="py-12 text-center text-slate-500 text-sm border-t border-slate-200 dark:border-slate-800">
+          © 2024 AI Watchdog. Building a fairer future.
+      </footer>
+    </main>
+  );
+}
