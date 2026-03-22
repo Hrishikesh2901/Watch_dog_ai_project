@@ -1,9 +1,10 @@
 replicaCount: 1
 
 image:
-  repository: hrishipatil193/ai-backend
+  # 'minikube image load' wala exact naam
+  repository: watchdog_project_backend-api 
   pullPolicy: Never
-  tag: "v1"
+  tag: "latest"
 
 serviceAccount:
   create: true
@@ -17,7 +18,8 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /  # Ye zaroori hai agar backend /api nahi samajhta
+    # Rewrite zaroori hai agar backend '/' par listen karta hai aur ingress '/api' redirect karta hai
+    nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
     - host: ai-project.local
       paths:
@@ -30,12 +32,16 @@ autoscaling:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
 
+# AI Models heavy hote hain, isliye probes ko abhi ke liye disabled rakha hai 
+# taaki startup ke waqt pod kill na ho jaye
 livenessProbe:
   enabled: false
 readinessProbe:
   enabled: false
+
 httpRoute:
   enabled: false
+
 env:
   - name: ROOT_PATH
     value: "/api"

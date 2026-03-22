@@ -1,17 +1,14 @@
 replicaCount: 1
 
 image:
-  repository: hrishipatil193/ai-frontend
+  repository: watchdog_project_frontend-ui 
   pullPolicy: Never
-  tag: "v1"
-
-serviceAccount:
-  create: true
-  name: "ai-frontend-sa"
+  tag: "latest"
 
 service:
   type: ClusterIP
-  port: 3000  # Frontend Port
+  port: 80         # Bahar se hum 80 pe hi hit karenge
+  targetPort: 3000 # Lekin andar Next.js 3000 pe chal raha hai
 
 ingress:
   enabled: true
@@ -22,12 +19,16 @@ ingress:
         - path: /
           pathType: Prefix
 
-autoscaling:
-  enabled: false
+# Resource limits (Next.js aur AI assets ke liye)
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "200m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
 
 livenessProbe:
   enabled: false
 readinessProbe:
-  enabled: false
-httpRoute:
   enabled: false
