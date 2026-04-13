@@ -1,26 +1,42 @@
 
 import pandas as pd
 import os
+import random
 from datetime import datetime
 from .database import create_user, add_report, init_db, DB_FILE, get_connection
 from .auth import get_password_hash
 from .services.ingestion_state import update_progress, set_completed, set_error
 import sqlite3
 
-# Path to the CSV file - adjusting to be relative or absolute based on execution context
-# Assuming script is run from backend/ directory
-CSV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Transparency dataset.csv")
-# Fallback if file is in root
-if not os.path.exists(CSV_PATH):
-    CSV_PATH = os.path.abspath(os.path.join(os.getcwd(), "..", "Transparency dataset.csv"))
+# Path to the CSV file - using absolute path to 100.csv
+CSV_PATH = r"D:\Krix_Projects\Btech\83D\100.csv"
 
 def generate_password(name, dob):
     try:
         first_four = name[:4].lower().replace(" ", "")
-        year = dob.split("-")[0]
+        # Handle both MM/DD/YYYY and YYYY-MM-DD formats
+        if "/" in str(dob):
+            year = str(dob).split("/")[-1]  # Get last part for MM/DD/YYYY
+        else:
+            year = str(dob).split("-")[0]   # Get first part for YYYY-MM-DD
         return f"{first_four}{year}"
     except:
         return "pass1234"
+
+def get_random_status(original_status):
+    """
+    Generate random status distribution for demo purposes:
+    - 30% Approved
+    - 50% Rejected (keep original for context)
+    - 20% Pending
+    """
+    rand = random.random()
+    if rand < 0.3:
+        return "Approved"
+    elif rand < 0.8:
+        return original_status  # Keep original "Rejected"
+    else:
+        return "Pending"
 
 def ingest_data_from_df(df):
     # Ensure DB is ready with new schema
@@ -59,6 +75,9 @@ def ingest_data_from_df(df):
                 "date_of_birth": dob
             }
             
+            original_decision_outcome = row.get('decision_outcome', 'Pending')
+            random_status = get_random_status(original_decision_outcome)
+            
             report_data = {
                 "category": row.get('category', 'General'),
                 "location": row.get('country', 'India'),
@@ -68,8 +87,8 @@ def ingest_data_from_df(df):
                 "sector": row.get('sector', ''),
                 "affected_group": row.get('affected_group', ''),
                 "appeal_available": row.get('appeal_available', 'No'),
-                "status": row.get('decision_outcome', 'Pending'),
-                "rejection_reason": row.get('reason_given') if row.get('decision_outcome') == 'Rejected' else None,
+                "status": random_status,
+                "rejection_reason": row.get('reason_given') if random_status == 'Rejected' else None,
                 "timestamp": datetime.now().isoformat(),
                 # Store username to link later
                 "_username": mobile 

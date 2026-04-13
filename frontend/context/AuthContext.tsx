@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async (authToken: string) => {
     try {
-      const res = await axios.get("http://localhost:8000/api/auth/users/me", {
+      const res = await axios.get("http://127.0.0.1:8000/api/auth/users/me", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setUser(res.data);
@@ -66,14 +66,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/auth/token",
+        "http://127.0.0.1:8000/api/auth/token",
         formData
       );
       const { access_token } = res.data;
       localStorage.setItem("token", access_token);
       setToken(access_token);
       const userData = await fetchUser(access_token);
-      
+
       if (userData?.role === 'admin') {
         router.push("/admin");
       } else {
@@ -87,13 +87,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (username: string, password: string) => {
     try {
-      await axios.post("http://localhost:8000/api/auth/register", {
+      await axios.post("http://127.0.0.1:8000/api/auth/register", {
         username,
         password,
       });
       return true;
     } catch (error) {
-      console.error("Registringation failed", error);
+      console.error("Registration failed", error);
       return false;
     }
   };

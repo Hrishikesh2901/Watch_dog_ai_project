@@ -43,3 +43,4 @@ docker-compose.override.yml
 # Agar local pe charts build kiye hain
 charts/*.tgzbackend/venv/
 *.tar
+old_frontend_backup/

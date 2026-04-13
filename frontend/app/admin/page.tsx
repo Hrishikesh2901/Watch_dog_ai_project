@@ -42,18 +42,18 @@ export default function AdminDashboard() {
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
     const [users, setUsers] = useState<UserStatus[]>([]);
     const [activeTab, setActiveTab] = useState<'analytics' | 'users' | 'reports'>('analytics');
-    
+
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [lastIngestionStatus, setLastIngestionStatus] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('All');
-    
+
     // Pagination
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const LIMIT = 50;
-    
+
     // Reject Form
     const [rejectReason, setRejectReason] = useState("");
     const [rejectResolution, setRejectResolution] = useState("");
@@ -66,11 +66,11 @@ export default function AdminDashboard() {
         if (isUploading || (ingestionProgress && ingestionProgress.status === 'processing')) {
             interval = setInterval(async () => {
                 try {
-                    const res = await axios.get('http://localhost:8000/api/admin/ingest/status', {
+                    const res = await axios.get('http://127.0.0.1:8000/api/admin/ingest/status', {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setIngestionProgress(res.data);
-                    
+
                     if (res.data.status === 'completed' || res.data.status === 'error') {
                         setIsUploading(false);
                         setLastIngestionStatus(res.data.message);
@@ -95,9 +95,9 @@ export default function AdminDashboard() {
             // Fetch reports and analytics only once or when needed? For simple dashboard, fetch all.
             // But users need pagination.
             const [reportsRes, analyticsRes, usersRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/admin/reports', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://localhost:8000/api/admin/analytics', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`http://localhost:8000/api/admin/users?page=${page}&limit=${LIMIT}&status=${statusFilter}`, { headers: { Authorization: `Bearer ${token}` } })
+                axios.get('http://127.0.0.1:8000/api/admin/reports', { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get('http://127.0.0.1:8000/api/admin/analytics', { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`http://127.0.0.1:8000/api/admin/users?page=${page}&limit=${LIMIT}&status=${statusFilter}`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setReports(reportsRes.data);
             setAnalytics(analyticsRes.data);
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
-        
+
         const file = e.target.files[0];
         if (!file.name.endsWith('.csv')) {
             alert("Please upload a CSV file.");
@@ -123,8 +123,8 @@ export default function AdminDashboard() {
         setIsUploading(true);
         setLastIngestionStatus(null);
         try {
-            const res = await axios.post('http://localhost:8000/api/admin/upload', formData, {
-                headers: { 
+            const res = await axios.post('http://127.0.0.1:8000/api/admin/upload', formData, {
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
     const handleReset = async () => {
         if (!confirm("WARNING: This will delete ALL reports and users (except admins). This action cannot be undone. Are you sure?")) return;
         try {
-            await axios.post('http://localhost:8000/api/admin/clear-data', {}, {
+            await axios.post('http://127.0.0.1:8000/api/admin/clear-data', {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             alert("All data cleared successfully.");
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
     const handleCleanData = async () => {
         try {
             setIsUploading(true); // Reusing uploading state for spinner/feedback
-            const res = await axios.post('http://localhost:8000/api/admin/clean-data', {}, {
+            const res = await axios.post('http://127.0.0.1:8000/api/admin/clean-data', {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
 
     const updateStatus = async (id: number, status: string, reason?: string, resolution?: string) => {
         try {
-            await axios.put(`http://localhost:8000/api/admin/reports/${id}/status`, {
+            await axios.put(`http://127.0.0.1:8000/api/admin/reports/${id}/status`, {
                 status,
                 rejection_reason: reason,
                 resolution_steps: resolution
@@ -244,34 +244,33 @@ export default function AdminDashboard() {
                                 {isUploading ? 'Ingesting...' : 'Ingest Dataset'}
                             </button>
                         </div>
-                            <button
-                                onClick={handleReset}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center"
-                            >
-                                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Reset Data
-                            </button>
-                            <button
-                                onClick={handleCleanData}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-medium transition-colors flex items-center"
-                            >
-                                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                </svg>
-                                Data Cleaning
-                            </button>
+                        <button
+                            onClick={handleReset}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center"
+                        >
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Reset Data
+                        </button>
+                        <button
+                            onClick={handleCleanData}
+                            className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-medium transition-colors flex items-center"
+                        >
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                            Data Cleaning
+                        </button>
                         <div className="flex space-x-2 bg-white dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
                             {(['analytics', 'users', 'reports'] as const).map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                        activeTab === tab 
-                                        ? 'bg-blue-500 text-white' 
+                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab
+                                        ? 'bg-blue-500 text-white'
                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                    }`}
+                                        }`}
                                 >
                                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                                 </button>
@@ -279,16 +278,16 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                 </div>
-                
+
 
                 {ingestionProgress && ingestionProgress.status === 'processing' && (
                     <div className="mb-6 p-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-blue-200 dark:border-blue-900 animate-in fade-in slide-in-from-top-4">
                         <div className="flex justify-between items-center mb-2">
-                             <span className="font-semibold text-blue-700 dark:text-blue-400">Ingesting Dataset...</span>
-                             <span className="text-sm text-slate-500">{ingestionProgress.current} / {ingestionProgress.total}</span>
+                            <span className="font-semibold text-blue-700 dark:text-blue-400">Ingesting Dataset...</span>
+                            <span className="text-sm text-slate-500">{ingestionProgress.current} / {ingestionProgress.total}</span>
                         </div>
                         <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 overflow-hidden">
-                            <div 
+                            <div
                                 className="bg-blue-600 h-4 rounded-full transition-all duration-300 ease-out relative"
                                 style={{ width: `${(ingestionProgress.current / (ingestionProgress.total || 1)) * 100}%` }}
                             >
@@ -320,28 +319,28 @@ export default function AdminDashboard() {
                 {analytics && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4">
                         <div className="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-blue-500 to-violet-600 text-white transform hover:scale-105 transition-transform duration-200">
-                             <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Total Applications</h3>
-                             <div className="text-4xl font-bold">
+                            <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Total Applications</h3>
+                            <div className="text-4xl font-bold">
                                 <CountUp to={Object.values(analytics.status_counts).reduce((a, b) => a + b, 0)} separator="," />
-                             </div>
+                            </div>
                         </div>
                         <div className="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white transform hover:scale-105 transition-transform duration-200">
-                             <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Approved</h3>
-                             <div className="text-4xl font-bold">
+                            <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Approved</h3>
+                            <div className="text-4xl font-bold">
                                 <CountUp to={analytics.status_counts['Approved'] || 0} separator="," />
-                             </div>
+                            </div>
                         </div>
                         <div className="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-red-500 to-pink-600 text-white transform hover:scale-105 transition-transform duration-200">
-                             <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Rejected</h3>
-                             <div className="text-4xl font-bold">
+                            <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Rejected</h3>
+                            <div className="text-4xl font-bold">
                                 <CountUp to={analytics.status_counts['Rejected'] || 0} separator="," />
-                             </div>
+                            </div>
                         </div>
                         <div className="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-amber-400 to-orange-500 text-white transform hover:scale-105 transition-transform duration-200">
-                             <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Processing</h3>
-                             <div className="text-4xl font-bold">
+                            <h3 className="text-sm font-medium opacity-80 mb-2 uppercase tracking-wider">Processing</h3>
+                            <div className="text-4xl font-bold">
                                 <CountUp to={analytics.status_counts['Processing'] || 0} separator="," />
-                             </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -354,17 +353,17 @@ export default function AdminDashboard() {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={prepareChartData(analytics.sector_counts)} margin={{ bottom: 40 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                        <XAxis 
-                                            dataKey="name" 
-                                            stroke="#64748b" 
-                                            fontSize={10} 
-                                            tickFormatter={(val) => val.slice(0, 15)} 
+                                        <XAxis
+                                            dataKey="name"
+                                            stroke="#64748b"
+                                            fontSize={10}
+                                            tickFormatter={(val) => val.slice(0, 15)}
                                             angle={-45}
                                             textAnchor="end"
                                             interval={0}
                                         />
                                         <YAxis stroke="#64748b" fontSize={12} />
-                                        <RechartsTooltip 
+                                        <RechartsTooltip
                                             contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
                                         />
                                         <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
@@ -400,8 +399,8 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 md:col-span-2">
-                             <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Application Status Distribution</h3>
-                             <div className="h-64">
+                            <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Application Status Distribution</h3>
+                            <div className="h-64">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={prepareChartData(analytics.status_counts)} layout="vertical">
                                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -410,15 +409,15 @@ export default function AdminDashboard() {
                                         <RechartsTooltip />
                                         <Bar dataKey="value" fill="#10B981" radius={[0, 4, 4, 0]} barSize={30}>
                                             {prepareChartData(analytics.status_counts).map((entry, index) => (
-                                                 <Cell key={`cell-${index}`} fill={
-                                                     entry.name === 'Approved' ? '#10B981' : 
-                                                     entry.name === 'Rejected' ? '#EF4444' : '#F59E0B'
-                                                 } />
+                                                <Cell key={`cell-${index}`} fill={
+                                                    entry.name === 'Approved' ? '#10B981' :
+                                                        entry.name === 'Rejected' ? '#EF4444' : '#F59E0B'
+                                                } />
                                             ))}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
-                             </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -441,65 +440,64 @@ export default function AdminDashboard() {
                             </select>
                         </div>
                         <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase text-xs font-bold tracking-wider sticky top-0 z-10">
-                                <tr>
-                                    <th className="p-4 border-b dark:border-slate-700">User Details</th>
-                                    <th className="p-4 border-b dark:border-slate-700">Application Status</th>
-                                    <th className="p-4 border-b dark:border-slate-700">Last Activity</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {users.map((u, i) => (
-                                    <tr key={u.id} className={`transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/10 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'}`}>
-                                        <td className="p-4">
-                                            <div className="font-medium text-slate-900 dark:text-white">{u.full_name || "Unknown"}</div>
-                                            <div className="text-xs text-slate-500">{u.mobile_number}</div>
-                                            <div className="text-xs text-slate-500">{u.email}</div>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold inline-flex items-center ${
-                                                u.application_status === 'Approved' ? 'bg-green-100 text-green-700' :
-                                                u.application_status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                                'bg-yellow-100 text-yellow-700'
-                                            }`}>
-                                                {u.application_status || "No Application"}
-                                            </span>
-                                            {u.application_status === 'Rejected' && u.rejection_reason && (
-                                                <div className="text-xs text-red-500 mt-1 max-w-xs truncate" title={u.rejection_reason}>
-                                                    Reason: {u.rejection_reason}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="p-4 text-xs text-slate-500">
-                                            {u.timestamp ? new Date(u.timestamp).toLocaleDateString() : 'N/A'}
-                                        </td>
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase text-xs font-bold tracking-wider sticky top-0 z-10">
+                                    <tr>
+                                        <th className="p-4 border-b dark:border-slate-700">User Details</th>
+                                        <th className="p-4 border-b dark:border-slate-700">Application Status</th>
+                                        <th className="p-4 border-b dark:border-slate-700">Last Activity</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {users.length === 0 && <div className="p-8 text-center text-slate-500">No users found.</div>}
-                        
-                        <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <button
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={page === 1}
-                                className="px-3 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-50"
-                            >
-                                Previous
-                            </button>
-                            <span className="text-sm text-slate-600 dark:text-slate-400">
-                                Page {page} of {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                disabled={page >= totalPages}
-                                className="px-3 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-50"
-                            >
-                                Next
-                            </button>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {users.map((u, i) => (
+                                        <tr key={u.id} className={`transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/10 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'}`}>
+                                            <td className="p-4">
+                                                <div className="font-medium text-slate-900 dark:text-white">{u.full_name || "Unknown"}</div>
+                                                <div className="text-xs text-slate-500">{u.mobile_number}</div>
+                                                <div className="text-xs text-slate-500">{u.email}</div>
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold inline-flex items-center ${u.application_status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                                    u.application_status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                    {u.application_status || "No Application"}
+                                                </span>
+                                                {u.application_status === 'Rejected' && u.rejection_reason && (
+                                                    <div className="text-xs text-red-500 mt-1 max-w-xs truncate" title={u.rejection_reason}>
+                                                        Reason: {u.rejection_reason}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="p-4 text-xs text-slate-500">
+                                                {u.timestamp ? new Date(u.timestamp).toLocaleDateString() : 'N/A'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {users.length === 0 && <div className="p-8 text-center text-slate-500">No users found.</div>}
+
+                            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="px-3 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-50"
+                                >
+                                    Previous
+                                </button>
+                                <span className="text-sm text-slate-600 dark:text-slate-400">
+                                    Page {page} of {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page >= totalPages}
+                                    className="px-3 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
+                            </div>
                         </div>
-                    </div>
                     </div>
                 )}
 
@@ -531,11 +529,10 @@ export default function AdminDashboard() {
                                         <td className="p-4 text-slate-600 dark:text-slate-400 text-sm truncate max-w-xs">{report.description}</td>
                                         <td className="p-4 text-slate-600 dark:text-slate-400 text-sm">{report.location}</td>
                                         <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                                report.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${report.status === 'Approved' ? 'bg-green-100 text-green-700' :
                                                 report.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                                'bg-yellow-100 text-yellow-700'
-                                            }`}>
+                                                    'bg-yellow-100 text-yellow-700'
+                                                }`}>
                                                 {report.status}
                                             </span>
                                         </td>
@@ -548,13 +545,13 @@ export default function AdminDashboard() {
                                         <td className="p-4">
                                             {report.status === 'Pending' && (
                                                 <div className="flex space-x-2">
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleApprove(report)}
                                                         className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
                                                     >
                                                         Approve
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             setSelectedReport(report);
                                                             setShowRejectModal(true);
@@ -581,7 +578,7 @@ export default function AdminDashboard() {
                             <form onSubmit={handleRejectSubmit}>
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Rejection Reason</label>
-                                    <textarea 
+                                    <textarea
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                         rows={3}
                                         value={rejectReason}
@@ -592,7 +589,7 @@ export default function AdminDashboard() {
                                 </div>
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Resolution Steps</label>
-                                    <textarea 
+                                    <textarea
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                         rows={3}
                                         value={rejectResolution}
@@ -602,14 +599,14 @@ export default function AdminDashboard() {
                                     />
                                 </div>
                                 <div className="flex justify-end space-x-3">
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => setShowRejectModal(false)}
                                         className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg dark:text-slate-400 dark:hover:bg-slate-800"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
+                                    <button
                                         type="submit"
                                         className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                                     >
