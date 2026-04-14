@@ -17,17 +17,9 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    echo "Downloading and Running Trivy..."
-                    sh """
-                        # Download Trivy binary to the current workspace
-                        curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b . v0.48.3
-                        
-                        # Ensure the binary is executable
-                        chmod +x ./trivy
-                        
-                        # Run the scan using the local path
-                        ./trivy fs . --severity HIGH,CRITICAL
-                    """
+                    echo "Running Trivy scan using Docker sidecar..."
+                    // This runs a container just for the scan and maps your code into it
+                    sh "docker run --rm -v ${WORKSPACE}:/apps aquasec/trivy:0.48.3 fs /apps --severity HIGH,CRITICAL"
                 }
             }
         }
@@ -35,7 +27,6 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 script {
-                    // Ensure 'SonarScanner' is the exact name in Global Tool Configuration
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Watchdog-AI"
@@ -48,7 +39,6 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image..."
-                    // This requires Docker to be installed on the Jenkins host/node
                     sh "docker build -t ${DOCKER_IMAGE}:latest ."
                     
                     echo "Pushing to Docker Hub..."
@@ -77,7 +67,7 @@ pipeline {
             echo "Success: Watchdog AI Pipeline completed successfully!"
         }
         failure {
-            echo "Error: Pipeline failed. Please check the logs above."
+            echo "Error: Pipeline failed. Check if Docker is running on the Jenkins agent."
         }
     }
 }
