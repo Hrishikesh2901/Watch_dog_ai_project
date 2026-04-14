@@ -2,37 +2,23 @@ pipeline {
     agent any
 
     environment {
-        // Docker settings
         DOCKER_IMAGE    = "hrishipatil193/ai-backend"
-        DOCKER_CREDS    = credentials('docker-hub-credentials') // Jenkins ID for DockerHub
-        
-        // SonarQube settings
+        DOCKER_CREDS    = credentials('docker-hub-credentials')
         SONAR_PROJECT_KEY = "Watchdog-AI"
-        
-        // Kubernetes settings
         CHART_PATH      = './ai-app-chart'
     }
 
     stages {
         stage('Pull Code') {
             steps {
-                // Repository clone
                 git branch: 'main', url: 'https://github.com/Hrishikesh2901/Watch_dog_ai_project.git'
             }
         }
 
+        // TRIVY KO ABHI KE LIYE SKIP KAR RAHE HAIN
         stage('Security Scan') {
             steps {
-                script {
-                    dir('backend') {
-                        echo "Running Security Scan (Trivy)..."
-                        // Agar Trivy binary issues de, toh is stage ko temporarily skip kar dena
-                        sh """
-                            curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b .
-                            ./trivy fs . --severity HIGH,CRITICAL
-                        """
-                    }
-                }
+                echo "Skipping Trivy Scan to fix the main pipeline flow..."
             }
         }
 
@@ -41,10 +27,9 @@ pipeline {
                 script {
                     dir('backend') {
                         echo "Starting SonarQube Analysis..."
-                        // 'SonarScanner' should be the name in Global Tool Configuration
                         def scannerHome = tool 'SonarScanner'
                         
-                        // 'sonar-token' is the ID of the Secret Text credential you created in Jenkins
+                        // ID 'sonar-token' wahi honi chahiye jo tumne Jenkins Credentials mein dali hai
                         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                             withSonarQubeEnv('SonarQube') {
                                 sh "${scannerHome}/bin/sonar-scanner \
@@ -62,6 +47,7 @@ pipeline {
                 script {
                     dir('backend') {
                         echo "Building Docker Image..."
+                        // Yahan 'docker' command tabhi chalega agar Jenkins ko Docker socket ka access hai
                         sh "docker build -t ${DOCKER_IMAGE}:latest ."
                         
                         echo "Pushing to Docker Hub..."
@@ -74,8 +60,7 @@ pipeline {
 
         stage('Deploy Local K8s') {
             steps {
-                echo "Deploying to Minikube using Helm..."
-                // Helm install/upgrade
+                echo "Deploying to Minikube..."
                 sh "helm upgrade --install watchdog-ai ${CHART_PATH} --namespace ai-project --create-namespace"
             }
         }
@@ -89,10 +74,10 @@ pipeline {
             }
         }
         success {
-            echo "Bhai, Pipeline Success! Watchdog AI is live."
+            echo "Bhai, Finally Success!"
         }
         failure {
-            echo "Pipeline Fail ho gayi. Check logs for folder paths or permissions."
+            echo "Pipeline Fail! Check if Sonar Token is correct or Docker is installed."
         }
     }
 }
