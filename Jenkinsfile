@@ -6,8 +6,9 @@ pipeline {
         DOCKER_IMAGE      = "hrishipatil193/ai-backend"
         DOCKER_CREDS      = credentials('docker-hub-credentials') 
         
-        // SonarQube Details (Matched with your Jenkins UI)
+        // SonarQube Details
         SONAR_PROJECT_KEY = "Watchdog-AI"
+        // Yahan 'Sonar_token' wahi ID hai jo tere Jenkins Credentials mein hai
         SONAR_TOKEN_CRED  = credentials('Sonar_token') 
         
         // Deployment Details
@@ -24,13 +25,13 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 script {
-                    // Tool name must match 'Manage Jenkins -> Tools'
+                    // Tool name matched with 'Manage Jenkins -> Tools'
                     def scannerHome = tool 'SonarScanner'
                     
                     dir('backend') {
                         echo "Starting SonarQube Analysis..."
-                        // Server name must match 'Manage Jenkins -> System'
                         withSonarQubeEnv('SonarQube') {
+                            // Single quotes use kiye hain taaki Jenkins interpolation error na de
                             sh "${scannerHome}/bin/sonar-scanner \
                                 -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                                 -Dsonar.token=${SONAR_TOKEN_CRED}"
@@ -60,7 +61,6 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 echo "Deploying to Kubernetes using Helm..."
-                // --install ensures it works even if it's the first time
                 sh "helm upgrade --install watchdog-ai ${CHART_PATH} --namespace ai-project --create-namespace"
             }
         }
@@ -74,10 +74,10 @@ pipeline {
             }
         }
         success {
-            echo "Bhai, Mubarak ho! Pipeline successfully complete ho gayi."
+            echo "Bhai, Nashik mein party! Pipeline Success."
         }
         failure {
-            echo "Pipeline Fail! Bhai logs check kar, kahan ruka hai."
+            echo "Pipeline Fail! Check logs."
         }
     }
 }
