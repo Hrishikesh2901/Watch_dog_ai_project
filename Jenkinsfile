@@ -36,8 +36,11 @@ pipeline {
             steps {
                 script {
                     dir('backend') {
+                        echo "Checking if Docker is accessible..."
+                        // Isse humein pata chal jayega ki docker binary mili ya nahi
+                        sh "docker --version"
+                        
                         echo "Building Docker Image..."
-                        // Yahan ensure karo ki Docker installed hai Jenkins node pe
                         sh "docker build -t ${DOCKER_IMAGE}:latest ."
                         
                         echo "Logging into Docker Hub..."
@@ -53,6 +56,7 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 echo "Deploying to Kubernetes using Helm..."
+                // Helm usually Jenkins agent pe installed hona chahiye
                 sh "helm upgrade --install watchdog-ai ${CHART_PATH} --namespace ai-project --create-namespace"
             }
         }
@@ -66,10 +70,10 @@ pipeline {
             }
         }
         success {
-            echo "Bhai, kamaal kar diya! SonarQube aur Docker dono chal gaye."
+            echo "Bhai, Nashik mein party! Pipeline Success."
         }
         failure {
-            echo "Pipeline Fail! Docker command nahi mil rahi, Jenkins container ki permissions check kar."
+            echo "Pipeline Fail! Docker permissions check kar bhai."
         }
     }
 }
