@@ -17,9 +17,14 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    echo "Running Trivy scan using Docker sidecar..."
-                    // This runs a container just for the scan and maps your code into it
-                    sh "docker run --rm -v ${WORKSPACE}:/apps aquasec/trivy:0.48.3 fs /apps --severity HIGH,CRITICAL"
+                    echo "Downloading and Running Trivy (Standalone Mode)..."
+                    /* We download the tarball directly, extract it, and run it. 
+                       This is the most reliable way when 'docker' is missing.
+                    */
+                    sh """
+                        curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b .
+                        ./trivy fs . --severity HIGH,CRITICAL
+                    """
                 }
             }
         }
@@ -27,6 +32,7 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 script {
+                    // Ensure 'SonarScanner' name matches your Global Tool Config
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Watchdog-AI"
@@ -38,10 +44,12 @@ pipeline {
         stage('Build & Push') {
             steps {
                 script {
-                    echo "Building Docker Image..."
+                    echo "Building Image..."
+                    /* WARNING: If 'docker' was not found in the Scan stage, 
+                       it will also NOT be found here. 
+                       To build images without Docker, you must use Kaniko.
+                    */
                     sh "docker build -t ${DOCKER_IMAGE}:latest ."
-                    
-                    echo "Pushing to Docker Hub..."
                     sh "echo ${DOCKER_CREDS_PSW} | docker login -u ${DOCKER_CREDS_USR} --password-stdin"
                     sh "docker push ${DOCKER_IMAGE}:latest"
                 }
@@ -64,10 +72,10 @@ pipeline {
             }
         }
         success {
-            echo "Success: Watchdog AI Pipeline completed successfully!"
+            echo "Success: Watchdog AI Pipeline completed!"
         }
         failure {
-            echo "Error: Pipeline failed. Check if Docker is running on the Jenkins agent."
+            echo "Error: Pipeline failed. Check if your Jenkins node has the required tools."
         }
     }
 }
