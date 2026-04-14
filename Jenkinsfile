@@ -2,16 +2,10 @@ pipeline {
     agent any
 
     environment {
-        // Docker Hub Details
         DOCKER_IMAGE      = "hrishipatil193/ai-backend"
         DOCKER_CREDS      = credentials('docker-hub-credentials') 
-        
-        // SonarQube Details
         SONAR_PROJECT_KEY = "Watchdog-AI"
-        // Yahan 'Sonar_token' wahi ID hai jo tere Jenkins Credentials mein hai
         SONAR_TOKEN_CRED  = credentials('Sonar_token') 
-        
-        // Deployment Details
         CHART_PATH        = './ai-app-chart'
     }
 
@@ -25,16 +19,14 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 script {
-                    // Tool name matched with 'Manage Jenkins -> Tools'
                     def scannerHome = tool 'SonarScanner'
-                    
                     dir('backend') {
                         echo "Starting SonarQube Analysis..."
                         withSonarQubeEnv('SonarQube') {
-                            // Single quotes use kiye hain taaki Jenkins interpolation error na de
-                            sh "${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                                -Dsonar.token=${SONAR_TOKEN_CRED}"
+                            // Sabse safe tarika: SONAR_TOKEN env var scanner khud detect kar leta hai
+                            withEnv(["SONAR_TOKEN=${SONAR_TOKEN_CRED}"]) {
+                                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY}"
+                            }
                         }
                     }
                 }
