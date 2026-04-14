@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import init_db
-from .routers import reports, admin, auth, user
+from routers import reports, admin, auth, user
 
 from fastapi.middleware.cors import CORSMiddleware
 
