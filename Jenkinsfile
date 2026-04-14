@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE      = "hrishipatil193/ai-backend"
         DOCKER_CREDS      = credentials('docker-hub-credentials') 
         SONAR_PROJECT_KEY = "Watchdog-AI"
-        // Ye ID Jenkins ke 'Credentials' section se match honi chahiye
         SONAR_TOKEN_CRED  = credentials('Sonar_token') 
         CHART_PATH        = './ai-app-chart'
     }
@@ -24,7 +23,6 @@ pipeline {
                     dir('backend') {
                         echo "Starting SonarQube Analysis..."
                         withSonarQubeEnv('SonarQube') {
-                            // Scanner ko token direct variable ke through pass kar rahe hain
                             sh "${scannerHome}/bin/sonar-scanner \
                                 -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                                 -Dsonar.token=${SONAR_TOKEN_CRED}"
@@ -39,6 +37,7 @@ pipeline {
                 script {
                     dir('backend') {
                         echo "Building Docker Image..."
+                        // Yahan ensure karo ki Docker installed hai Jenkins node pe
                         sh "docker build -t ${DOCKER_IMAGE}:latest ."
                         
                         echo "Logging into Docker Hub..."
@@ -67,10 +66,10 @@ pipeline {
             }
         }
         success {
-            echo "Bhai, kamaal kar diya! Pipeline Green ho gayi."
+            echo "Bhai, kamaal kar diya! SonarQube aur Docker dono chal gaye."
         }
         failure {
-            echo "Pipeline Fail! Bhai naya token check kar sahi se dala hai ya nahi."
+            echo "Pipeline Fail! Docker command nahi mil rahi, Jenkins container ki permissions check kar."
         }
     }
 }
