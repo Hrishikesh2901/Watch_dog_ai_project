@@ -1,38 +1,10 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: trivy
-    image: aquasec/trivy:0.48.3
-    command: ['sleep']
-    args: ['99d']
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:debug
-    command: ['sleep']
-    args: ['99d']
-    volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker
-  volumes:
-  - name: docker-config
-    projected:
-      sources:
-      - secret:
-          name: docker-hub-credentials
-          items:
-            - key: .dockerconfigjson
-              path: config.json
-"""
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE    = "hrishipatil193/ai-backend"
         CHART_PATH      = './ai-app-chart'
+        DOCKER_CREDS    = credentials('docker-hub-credentials')
     }
 
     stages {
@@ -44,10 +16,18 @@ spec:
 
         stage('Security Scan') {
             steps {
-                container('trivy') {
-                    echo "Running Trivy scan..."
-                    // No installation needed, the binary is already in the image
-                    sh "trivy fs . --severity HIGH,CRITICAL"
+                script {
+                    echo "Downloading and Running Trivy..."
+                    sh """
+                        # Download Trivy binary to the current workspace
+                        curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b . v0.48.3
+                        
+                        # Ensure the binary is executable
+                        chmod +x ./trivy
+                        
+                        # Run the scan using the local path
+                        ./trivy fs . --severity HIGH,CRITICAL
+                    """
                 }
             }
         }
@@ -55,7 +35,7 @@ spec:
         stage('Code Analysis') {
             steps {
                 script {
-                    // This assumes you have SonarScanner configured in Jenkins Global Tool Configuration
+                    // Ensure 'SonarScanner' is the exact name in Global Tool Configuration
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Watchdog-AI"
@@ -66,14 +46,14 @@ spec:
 
         stage('Build & Push') {
             steps {
-                container('kaniko') {
-                    echo "Building and Pushing Image using Kaniko..."
-                    // Kaniko builds images without needing a Docker daemon
-                    sh """
-                    /kaniko/executor --context `pwd` \
-                        --dockerfile Dockerfile \
-                        --destination ${DOCKER_IMAGE}:latest
-                    """
+                script {
+                    echo "Building Docker Image..."
+                    // This requires Docker to be installed on the Jenkins host/node
+                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                    
+                    echo "Pushing to Docker Hub..."
+                    sh "echo ${DOCKER_CREDS_PSW} | docker login -u ${DOCKER_CREDS_USR} --password-stdin"
+                    sh "docker push ${DOCKER_IMAGE}:latest"
                 }
             }
         }
@@ -88,8 +68,10 @@ spec:
 
     post {
         always {
-            echo "Cleaning up workspace..."
-            cleanWs()
+            script {
+                echo "Cleaning up workspace..."
+                cleanWs()
+            }
         }
         success {
             echo "Success: Watchdog AI Pipeline completed successfully!"
