@@ -17,11 +17,11 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    echo "Installing and Running Trivy scan..."
-                    // Downloading Trivy binary directly to avoid "docker: not found" error
+                    echo "Installing and Running Trivy scan in workspace..."
+                    // Installing Trivy to the current directory (.) to avoid permission errors
                     sh """
-                        curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.48.3
-                        /usr/local/bin/trivy fs . --severity HIGH,CRITICAL
+                        curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b . v0.48.3
+                        ./trivy fs . --severity HIGH,CRITICAL
                     """
                 }
             }
@@ -30,7 +30,7 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 script {
-                    // Ensure 'SonarScanner' is configured in Jenkins Global Tool Configuration
+                    // Make sure 'SonarScanner' is configured in Global Tool Configuration
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Watchdog-AI"
@@ -42,8 +42,6 @@ pipeline {
         stage('Build & Push') {
             steps {
                 script {
-                    // Note: This stage will still fail if the Jenkins Agent doesn't have Docker CLI.
-                    // If it fails, you'll need to use a Kubernetes Pod template with a Docker sidecar.
                     echo "Building Docker Image..."
                     sh "docker build -t ${DOCKER_IMAGE}:latest ."
                     
@@ -57,7 +55,6 @@ pipeline {
         stage('Deploy Local K8s') {
             steps {
                 echo "Deploying to Local Cluster using Helm..."
-                // Ensure the 'jenkins' user has kubeconfig access or appropriate RBAC permissions
                 sh "helm upgrade --install watchdog-ai ${CHART_PATH} --namespace ai-project --create-namespace"
             }
         }
@@ -71,7 +68,7 @@ pipeline {
             }
         }
         success {
-            echo "Success: Build and Local Deployment completed successfully!"
+            echo "Success: Watchdog AI Pipeline completed successfully!"
         }
         failure {
             echo "Error: Pipeline failed. Please check the logs above."
