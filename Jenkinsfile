@@ -17,14 +17,14 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    echo "Downloading and Running Trivy (Standalone Mode)..."
-                    /* We download the tarball directly, extract it, and run it. 
-                       This is the most reliable way when 'docker' is missing.
-                    */
-                    sh """
-                        curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b .
-                        ./trivy fs . --severity HIGH,CRITICAL
-                    """
+                    // Moving into backend folder for the scan
+                    dir('backend') {
+                        echo "Installing and Running Trivy in backend folder..."
+                        sh """
+                            curl -sfL https://raw.githubusercontent.com/aquasec/trivy/main/contrib/install.sh | sh -s -- -b . v0.48.3
+                            ./trivy fs . --severity HIGH,CRITICAL
+                        """
+                    }
                 }
             }
         }
@@ -32,10 +32,11 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 script {
-                    // Ensure 'SonarScanner' name matches your Global Tool Config
-                    def scannerHome = tool 'SonarScanner'
-                    withSonarQubeEnv('SonarQube') {
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Watchdog-AI"
+                    dir('backend') {
+                        def scannerHome = tool 'SonarScanner'
+                        withSonarQubeEnv('SonarQube') {
+                            sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Watchdog-AI"
+                        }
                     }
                 }
             }
@@ -44,14 +45,15 @@ pipeline {
         stage('Build & Push') {
             steps {
                 script {
-                    echo "Building Image..."
-                    /* WARNING: If 'docker' was not found in the Scan stage, 
-                       it will also NOT be found here. 
-                       To build images without Docker, you must use Kaniko.
-                    */
-                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
-                    sh "echo ${DOCKER_CREDS_PSW} | docker login -u ${DOCKER_CREDS_USR} --password-stdin"
-                    sh "docker push ${DOCKER_IMAGE}:latest"
+                    // This mirrors your successful local command
+                    dir('backend') {
+                        echo "Building Docker Image..."
+                        sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                        
+                        echo "Pushing to Docker Hub..."
+                        sh "echo ${DOCKER_CREDS_PSW} | docker login -u ${DOCKER_CREDS_USR} --password-stdin"
+                        sh "docker push ${DOCKER_IMAGE}:latest"
+                    }
                 }
             }
         }
@@ -59,6 +61,7 @@ pipeline {
         stage('Deploy Local K8s') {
             steps {
                 echo "Deploying to Local Cluster using Helm..."
+                // Assuming ai-app-chart is at the root. If it's inside backend, wrap this in dir() too.
                 sh "helm upgrade --install watchdog-ai ${CHART_PATH} --namespace ai-project --create-namespace"
             }
         }
@@ -72,10 +75,10 @@ pipeline {
             }
         }
         success {
-            echo "Success: Watchdog AI Pipeline completed!"
+            echo "Success: Watchdog AI Pipeline finished successfully!"
         }
         failure {
-            echo "Error: Pipeline failed. Check if your Jenkins node has the required tools."
+            echo "Error: Pipeline failed. Check the folder paths in Jenkins."
         }
     }
 }
