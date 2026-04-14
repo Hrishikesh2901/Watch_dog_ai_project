@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE      = "hrishipatil193/ai-backend"
         DOCKER_CREDS      = credentials('docker-hub-credentials') 
         SONAR_PROJECT_KEY = "Watchdog-AI"
+        // Ye ID Jenkins ke 'Credentials' section se match honi chahiye
         SONAR_TOKEN_CRED  = credentials('Sonar_token') 
         CHART_PATH        = './ai-app-chart'
     }
@@ -23,10 +24,10 @@ pipeline {
                     dir('backend') {
                         echo "Starting SonarQube Analysis..."
                         withSonarQubeEnv('SonarQube') {
-                            // Sabse safe tarika: SONAR_TOKEN env var scanner khud detect kar leta hai
-                            withEnv(["SONAR_TOKEN=${SONAR_TOKEN_CRED}"]) {
-                                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY}"
-                            }
+                            // Scanner ko token direct variable ke through pass kar rahe hain
+                            sh "${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                                -Dsonar.token=${SONAR_TOKEN_CRED}"
                         }
                     }
                 }
@@ -66,10 +67,10 @@ pipeline {
             }
         }
         success {
-            echo "Bhai, Nashik mein party! Pipeline Success."
+            echo "Bhai, kamaal kar diya! Pipeline Green ho gayi."
         }
         failure {
-            echo "Pipeline Fail! Check logs."
+            echo "Pipeline Fail! Bhai naya token check kar sahi se dala hai ya nahi."
         }
     }
 }
