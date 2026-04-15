@@ -4,8 +4,8 @@ Script to create an admin user in the database.
 This allows access to the admin dashboard.
 """
 
-from .database import init_db, create_user, get_user_by_username
-from .auth import get_password_hash
+from database import init_db, create_user, get_user_by_username
+from auth import get_password_hash
 
 def create_admin_user():
     """Creates an admin user with default credentials."""

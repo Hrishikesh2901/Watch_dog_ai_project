@@ -4,7 +4,6 @@ metadata:
   name: watchdog-frontend
   labels:
     app: watchdog-frontend
-    version: v3
 spec:
   replicas: 1
   selector:
@@ -17,41 +16,51 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: hrishipatil193/watchdog-frontend:v3  # <--- Version V3
-        imagePullPolicy: IfNotPresent
+        # MATCH THIS: Use the v1 image we just built and loaded
+        image: hrishipatil193/ai-frontend:v1 
+        imagePullPolicy: Never # Force it to use the local image we loaded
         ports:
         - containerPort: 3000
-        # --- PRO LEVEL ADDITION: SELF-HEALING ---
+        
+        # --- FIXED PROBES: Giving Next.js time to compile ---
+        startupProbe:   # NEW: This prevents K8s from killing the pod during 'npm run build'
+          httpGet:
+            path: /
+            port: 3000
+          failureThreshold: 30
+          periodSeconds: 10
+          
         livenessProbe:
           httpGet:
             path: /
             port: 3000
-          initialDelaySeconds: 15
+          initialDelaySeconds: 30 # Increased from 15
           periodSeconds: 20
+          
         readinessProbe:
           httpGet:
             path: /
             port: 3000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 20 # Increased from 5
           periodSeconds: 10
-        # --- RESOURCE MANAGEMENT ---
+          
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
+            memory: "256Mi" # Next.js needs a bit more than 128Mi to build
             cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: watchdog-frontend-v2-svc # Jo humne pehle fix kiya tha
+  name: frontend-service
 spec:
   selector:
     app: watchdog-frontend
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 3000
+      port: 80       # Port for the LoadBalancer/Service
+      targetPort: 3000 # Port where Next.js is running
   type: ClusterIP

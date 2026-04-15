@@ -1,6 +1,6 @@
 
-from .database import create_user, init_db
-from .auth import get_password_hash
+from database import create_user, init_db
+from auth import get_password_hash
 import os
 
 def main():

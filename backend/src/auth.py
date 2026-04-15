@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import os
-from .database import get_user_by_username
+from database import get_user_by_username
 
 # Secret key for JWT encoding/decoding
 SECRET_KEY = "supersecretkey" # In production, use environment variable

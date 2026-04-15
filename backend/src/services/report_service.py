@@ -1,6 +1,6 @@
-from ..database import add_report, get_reports
-from ..utils import anonymize_text, analyze_report
-from ..ai_model import ai_model
+from database import add_report, get_reports
+from utils import anonymize_text, analyze_report
+from ai_model import ai_model
 
 def submit_report_logic(category: str, location: str, description: str):
     # 1. Anonymize

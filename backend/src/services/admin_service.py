@@ -1,11 +1,11 @@
 from fastapi import UploadFile, HTTPException, BackgroundTasks
-from ..services.ingestion_state import reset_state, set_completed, set_error
-from ..database import import_csv_to_db, get_reports
-from ..ai_model import ai_model
+from services.ingestion_state import reset_state, set_completed, set_error
+from database import import_csv_to_db, get_reports
+from ai_model import ai_model
 
 import pandas as pd
 import io
-from ..ingest_data import ingest_data_from_df
+from ingest_data import ingest_data_from_df
 
 def run_ingestion_task(df):
     try:

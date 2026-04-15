@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
-from ..auth import create_access_token, get_password_hash, verify_password, get_current_user
-from ..database import create_user, get_user_by_username
+from auth import create_access_token, get_password_hash, verify_password, get_current_user
+from database import create_user, get_user_by_username
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 

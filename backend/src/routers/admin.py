@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Body, BackgroundTasks
-from ..services.admin_service import process_csv_upload, train_model_logic
-from ..services.ingestion_state import get_status
-from ..auth import get_current_admin_user
-from ..database import get_reports, update_report_status, get_analytics_data, get_all_users_with_status, clear_database_content, clean_duplicate_reports
-from ..ingest_data import ingest_data
+from services.admin_service import process_csv_upload, train_model_logic
+from services.ingestion_state import get_status
+from auth import get_current_admin_user
+from database import get_reports, update_report_status, get_analytics_data, get_all_users_with_status, clear_database_content, clean_duplicate_reports
+from ingest_data import ingest_data
 from pydantic import BaseModel
 from typing import Optional
 

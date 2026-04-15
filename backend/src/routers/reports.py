@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from ..services.report_service import submit_report_logic, get_all_reports
+from services.report_service import submit_report_logic, get_all_reports
 
 router = APIRouter()
 

@@ -3,9 +3,9 @@ import pandas as pd
 import os
 import random
 from datetime import datetime
-from .database import create_user, add_report, init_db, DB_FILE, get_connection
-from .auth import get_password_hash
-from .services.ingestion_state import update_progress, set_completed, set_error
+from database import create_user, add_report, init_db, DB_FILE, get_connection
+from auth import get_password_hash
+from services.ingestion_state import update_progress, set_completed, set_error
 import sqlite3
 
 # Path to the CSV file - using absolute path to 100.csv
